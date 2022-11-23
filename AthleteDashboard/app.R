@@ -11,6 +11,7 @@ library(sparkline)
 library(echarts4r)
 library(DT)
 library(googlesheets4)
+library(shinycustomloader)
 
 #_ -----
 # Data -----
@@ -85,55 +86,70 @@ body <- dashboardBody(
           column(
             width = 4,
               h4("Readiness Score: ", textOutput("rText")),
-            sparklineOutput(
-              outputId = "rScore"
-            )
+            withLoader(
+              sparklineOutput(outputId = "rScore"), 
+              type="html", 
+              loader="loader10")
           ),
           #### Actv-Score Sparkline -----
           column(
             width = 4,
             h4("Activity Score: ", textOutput("aText")),
-            sparklineOutput(
-              outputId = "aScore"
-            )
+            withLoader(
+            sparklineOutput(outputId = "aScore"), 
+            type="html", 
+            loader="loader10")
           ),
           #### Sleep-Score Sparkline -----
           column(
             width = 4,
             h4("Sleep Score: ", textOutput("sText")),
-            sparklineOutput(
-              outputId = "sScore"
-            )
+            withLoader(
+            sparklineOutput(outputId = "sScore"), 
+            type="html", 
+            loader="loader10")
           )
         ),
         column(
           width = 6,
           fluidRow(
             #### Rolling7 vs Rolling28 vs A:C Ratio -----
+            withLoader(
             echarts4rOutput(
               outputId = "rollingAC",
               height = "300px"
-            ),
+            ), 
+            type="html", 
+            loader="dnaspin"),
             #### Actv Score vs Total Calories -----
+            withLoader(
             echarts4rOutput(
               outputId = "ActVsCals",
               height = "300px"
-            )
+            ), 
+            type="html", 
+            loader="dnaspin")
           )
         ),
         column(
           width = 6,
           fluidRow(
             #### TRIMP vs Readiness Score -----
+            withLoader(
             echarts4rOutput(
               outputId = "EffVsDur",
               height = "300px"
-            ),
+            ), 
+            type="html", 
+            loader="dnaspin"),
             #### AVG HRV vs Avg HR -----
+            withLoader(
             echarts4rOutput(
               outputId = "HrvVsHr",
               height = "300px"
-            )
+            ), 
+          type="html", 
+          loader="dnaspin")
           )
         )
       )
@@ -144,8 +160,14 @@ body <- dashboardBody(
       tabName = "tabTrain",
       fluidPage(
         h1("Training Page"),
-        echarts4rOutput("trainCal", height = "200px"),
-        dataTableOutput("wout")
+        withLoader(
+        echarts4rOutput("trainCal", height = "200px"), 
+        type="html", 
+        loader="loader3"),
+        withLoader(
+        dataTableOutput("wout", height = "500px"), 
+        type="html", 
+        loader="loader3")
       )
     ),
     ###_ -----
@@ -164,9 +186,15 @@ body <- dashboardBody(
       fluidPage(
         h1("Sleep Page"),
         #### Sleep Stages River -----
-        echarts4rOutput("sleepStages", height = "250px"),
+        withLoader(
+        echarts4rOutput("sleepStages", height = "250px"), 
+        type="html", 
+        loader="loader3"),
         #### Sleep Quality Table -----
-        dataTableOutput("dSleepP", height = "450px")
+        withLoader(
+        dataTableOutput("dSleepP", height = "450px"), 
+        type="html", 
+        loader="loader3")
       )
     )
   )
@@ -184,6 +212,8 @@ body <- dashboardBody(
 # Server Components -----
 
 server <- function(input, output, session) {
+  
+  faIcon <- function(x) as.character(icon(x, lib = "font-awesome"))
   
   ##_ -----
   ## Data -----
@@ -650,8 +680,8 @@ server <- function(input, output, session) {
       chartRangeMin = 30,
       chartRangeMax = 100,
       lineWidth = 3,
-      lineColor = "#87f7d0",
-      fillColor = "#87f7d050",
+      lineColor = "#27727b",
+      fillColor = "#27727b50",
       spotRadius = 3,
       normalRangeMin = xAvg - xSD,
       normalRangeMax = xAvg + xSD,
@@ -681,8 +711,8 @@ server <- function(input, output, session) {
       chartRangeMin = 30,
       chartRangeMax = 100,
       lineWidth = 3,
-      lineColor = "#87f7d0",
-      fillColor = "#87f7d050",
+      lineColor = "#27727b",
+      fillColor = "#27727b50",
       spotRadius = 3,
       normalRangeMin = xAvg - xSD,
       normalRangeMax = xAvg + xSD,
@@ -712,8 +742,8 @@ server <- function(input, output, session) {
       chartRangeMin = 30,
       chartRangeMax = 100,
       lineWidth = 3,
-      lineColor = "#87f7d0",
-      fillColor = "#87f7d050",
+      lineColor = "#27727b",
+      fillColor = "#27727b50",
       spotRadius = 3,
       normalRangeMin = xAvg - xSD,
       normalRangeMax = xAvg + xSD,
@@ -742,7 +772,8 @@ server <- function(input, output, session) {
       e_title(
         text = "Heart Rate vs HRV",
         subtext = "Overnight / Sleeping averages") |>
-      e_theme("chalk")
+      e_legend(right = 20) |>
+      e_theme("infographic")
   })
   
   #### Activity Score vs Calories eChart -----
@@ -760,7 +791,7 @@ server <- function(input, output, session) {
       e_tooltip(trigger = "axis") |>
       e_title(text = "Activity Score vs Daily Calories") |>
       e_legend(right = 20) |>
-      e_theme("chalk")
+      e_theme("infographic")
   })
   
   #### Sleep Efficiency vs Sleep Time eChart -----
@@ -782,7 +813,7 @@ server <- function(input, output, session) {
       e_tooltip(trigger = "axis") |>
       e_title(text = "Sleep Duration vs Efficiency") |>
       e_legend(right = 20) |>
-      e_theme("chalk")
+      e_theme("infographic")
   })
   
   #### AC Ratio eChart -----
@@ -808,7 +839,7 @@ server <- function(input, output, session) {
       e_y_axis(index = 1, min = 0, max = 1.5) |>
       e_title(text = "Training Balance") |>
       e_legend(right = 20) |>
-      e_theme("chalk")
+      e_theme("infographic")
   })
   
   
@@ -822,7 +853,49 @@ server <- function(input, output, session) {
   
   #### Workout Table -----
   output$wout <- renderDataTable({
-    wout()
+    x <- wout()
+    
+    x <- x %>%
+      arrange(desc(start_datetime)) %>%
+      mutate("time2" = str_replace(str_sub(start_datetime,0,19), "T", " "),
+             "time1" = str_replace(str_sub(end_datetime,0,19), "T", " ")) %>%
+      transmute(
+        "Date" = paste0(wday(day, label = TRUE, abbr = TRUE)," ", month(day, label = TRUE, abbr = TRUE)," ", day(day)),
+        "Icon" = ifelse(activity == "walking", 
+                            faIcon("person-walking"),
+                            ifelse(
+                              activity == "running",
+                              faIcon("person-running"),
+                              ifelse(
+                                activity == "hiking",
+                                faIcon("person-hiking"),
+                                faIcon("person-rays")
+                              ))),
+        "Activity" = activity,
+        "Intensity" = intensity,
+        "Calories" = round(calories,0),
+        "duration" = round(difftime(time1 = time1, time2 = time2, units = "mins"),1),
+        "Source" = source)
+    
+    datatable(
+      x, escape = FALSE, rownames = FALSE, extensions = c('Buttons', 'ColReorder', 'Scroller'), options = list(
+        dom = 'Bfrtip',
+        buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+        colReorder = TRUE,
+        deferRender = TRUE,
+        scrollY = 400,
+        scroller = TRUE
+      )
+    ) %>%
+      formatStyle(
+        'Intensity',
+        color = styleEqual(c("easy", "moderate", "hard"), c('#f5eba4', '#e7b98d', '#bf444c')),
+        fontWeight = 'bold',
+        background = styleEqual(c("easy", "moderate", "hard"), c('#f5eba430', '#e7b98d30', '#bf444c30')),
+        backgroundSize = '100% 90%',
+        backgroundRepeat = 'no-repeat',
+        backgroundPosition = 'center'
+      )
   })
   
   #### Workout Calendar -----
@@ -846,7 +919,8 @@ server <- function(input, output, session) {
       e_heatmap(calories, coord_system = "calendar") |> 
       e_visual_map(max = max(x$calories)) |> 
       e_title("Workout Calendar", "Calories", left = "center") |>
-      e_tooltip(trigger = "item")
+      e_tooltip(trigger = "item") |>
+      e_theme("inforgraphic")
   })
   
   
@@ -899,7 +973,7 @@ server <- function(input, output, session) {
       e_area(Awake, stack = "grp", smooth = TRUE) |>
       e_tooltip(trigger = "axis") |> 
       e_title(text = "Sleep Stages", subtext = "time in minutes") |>
-      e_theme("dark-fresh-cut")
+      e_theme("inforgraphic")
   })
   
   #### Sleep Table -----
@@ -922,12 +996,12 @@ server <- function(input, output, session) {
       )
     
     datatable(
-      x, extensions = c('Buttons', 'ColReorder', 'Scroller'), options = list(
-        dom = 'Bfrtip',
+      x, rownames = FALSE, extensions = c('Buttons', 'ColReorder', 'Scroller'), options = list(
+        dom = 'Brtip',
         buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
         colReorder = TRUE,
         deferRender = TRUE,
-        scrollY = 200,
+        scrollY = 400,
         scroller = TRUE
       )
     ) %>%

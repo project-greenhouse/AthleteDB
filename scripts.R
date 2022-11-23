@@ -102,8 +102,8 @@ oTags <- "tag"
 
 # Date Query
 queryString_D <- list(
-  start_date = "2022-07-01",
-  end_date = "2022-10-01"
+  start_date = "2021-09-01",
+  end_date = "2022-12-01"
 )
 
 # DateTime Query 
@@ -195,7 +195,7 @@ dfSleep <- bind_cols(df,conts)
 # GET call to URL and response
 goGET <- VERB(
   "GET", 
-  paste0(url,"sleep"), 
+  paste0(url,"workout"), 
   body = payload, 
   add_headers(
     Host = 'api.ouraring.com', 
@@ -211,6 +211,8 @@ getResp <- content(goGET, "text")
 
 # Create DF from JSON
 goGETdf <- fromJSON(getResp)$data
+
+dfwout <- goGETdf
 
 # select columns from original GET call
 sleepP <- goGETdf %>% 
